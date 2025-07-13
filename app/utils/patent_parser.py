@@ -7,10 +7,12 @@ import requests
 from bs4 import BeautifulSoup
 
 USER_AGENTS = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15',
+    # 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    # 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0',
+    # 'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15',
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
 ]
+
 
 BASE_URL = "https://www.freepatentsonline.com"
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "parsed_patents")
@@ -33,19 +35,30 @@ def parse_patent(url, pid, session):
         res.raise_for_status()
         soup = BeautifulSoup(res.content, 'html.parser')
         data = {'pid': pid}
-        for div in soup.find_all('div', class_='disp_doc2'):
-            title_div = div.find('div', class_='disp_elm_title')
-            text_div = div.find('div', class_='disp_elm_text')
+
+        for block in soup.find_all('div', class_='disp_doc2'):
+            title_div = block.find('div', class_='disp_elm_title')
+            text_div = block.find('div', class_='disp_elm_text')
             if not title_div or not text_div:
                 continue
-            title = title_div.get_text(strip=True)
-            text = text_div.get_text(separator=" ", strip=True)
-            if title in ["Abstract", "Claims", "Description"]:
-                data[title] = text
-        return data if len(data) > 1 else None
+
+            section = title_div.get_text(strip=True).strip(':')
+            content = text_div.get_text(separator=' ', strip=True)
+
+            # Only keep relevant patent sections
+            if section in {"Abstract", "Claims", "Description"}:
+                data[section] = content
+
+        if not {"Abstract", "Claims", "Description"} & data.keys():
+            print(f"⚠️ No core sections found for {pid}, skipping.")
+            return None
+
+        return data
+
     except Exception as e:
         print(f"❌ Failed to parse patent {pid}: {e}")
         return None
+
 
 def get_patent_ids(query, page, session):
     url = f"{BASE_URL}/result.html?p={page}&sort=relevance&srch=top&query_txt={query}&submit=&patents_us=on"
@@ -84,6 +97,7 @@ def parse_and_save_topic(query: str) -> str:
             continue
 
         for pid in ids:
+            print(f"parsing {pid}....")
             if len(parsed_docs) >= MAX_DOCS:
                 break
             if pid.startswith("US"):
