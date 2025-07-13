@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
 from uuid import uuid4
+import os
 
 router = APIRouter()
 
@@ -61,6 +62,7 @@ async def register_user(request: Request, data: RegisterRequest):
 
 @router.post("/login")
 async def login_user(request: Request, data: LoginRequest):
+    print("DEBUG_MONGO_URI", os.getenv("MONGO_URI"))
     db = request.app.state.mongo
     redis_client = request.app.state.redis
 

@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+motor
+redis
+passlib[bcrypt]
+python-dotenv
+beautifulsoup4
+chromadb
+langchain
+huggingface_hub
+pydantic[email]

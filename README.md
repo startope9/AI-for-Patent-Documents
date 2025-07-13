@@ -1,124 +1,153 @@
-# PatentBot: LLM-Powered Patent Search Assistant
+# 🚀 PatentAI - Topic-Aware Patent Chatbot with Parsing & LLM
 
-PatentBot is an AI-powered conversational assistant that allows users to search and query patent documents using natural language. It leverages a vector database (ChromaDB), an LLM from Hugging Face (Mistral), and scraped data from FreePatentsOnline to provide relevant patent information.
-
----
-
-## Features
-
-* 🔍 **Patent Retrieval**: Extracts and parses patents related to a specific topic using web scraping.
-* 🧠 **LLM-Powered Q\&A**: Uses Mistral-7B via Hugging Face for intelligent answers based on retrieved patent contexts.
-* 📦 **Vector Database Search**: Stores and searches patent content using ChromaDB with embeddings.
-* 💬 **Conversational Memory**: Maintains interaction history for context-aware queries.
-* ⚙️ **Robust XML Parsing**: Safely parses and validates structured responses from LLMs.
+PatentAI is a FastAPI-based backend that allows users to register/login, parse patents for a topic, and chat with them using powerful LLMs like Mistral. It automatically scrapes patent data from [FreePatentsOnline](https://www.freepatentsonline.com), stores them in MongoDB, and embeds content into ChromaDB for fast vector search.
 
 ---
 
-## Setup
+## 📦 Features
 
-### 1. Environment Variables
+* ✅ User Authentication (Register/Login)
+* 📚 Topic-Based Patent Parsing
+* 🤖 Chat with Patents using LLM (e.g. Mistral)
+* 🔍 ChromaDB for Semantic Search
+* 🌐 FastAPI + MongoDB + Redis + LangChain
+* 🐳 Docker + Docker Compose ready
+
+---
+
+## 🛠️ Local Setup (without Docker)
+
+1. **Clone the repo**
+
+   ```bash
+   git clone https://github.com/yourname/patentai.git
+   cd patentai
+   ```
+
+2. **Create virtual env & install dependencies**
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # on Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+3. **Create a `.env` file**
+
+   ```env
+   HF_TOKEN=your_huggingface_token
+   ```
+
+4. **Start MongoDB and Redis locally** (you need them running!)
+
+   * MongoDB on `localhost:27017`
+   * Redis on `localhost:6379`
+   * update the above uri in `main.py`
+
+5. **Run the app**
+
+   ```bash
+   uvicorn main:app --reload
+   ```
+
+---
+
+## 🐳 Running with Docker Compose
+
+This method is recommended. It builds the app and runs MongoDB and Redis containers automatically.
+
+### 1. Add your HuggingFace token to `.env`
 
 ```bash
-export HF_TOKEN="your_huggingface_token_here"
+HF_TOKEN=your_huggingface_token
 ```
 
-### 2. Install Dependencies
+### 2. Start the services
 
 ```bash
-pip install -r requirements.txt
+docker-compose up --build
 ```
 
-Required libraries include:
+This will:
 
-* `chromadb`
-* `langchain`
-* `huggingface_hub`
-* `bs4`
-* `requests`
+* Build and run the app on `localhost:8000`
+* Start MongoDB and Redis services
+* Automatically mount volume folders for parsed patents and vector DB
 
 ---
 
-## Workflow
+## 📂 Project Structure
 
-### Step 1: Scrape Patent Data
-
-Run the parser to collect up to 50 patents for a keyword/topic.
-
-```bash
-python parse.py
 ```
-
-Output will be saved to `parsed_patents/<query>_50patents.csv`
-
-### Step 2: Embed Patents in ChromaDB
-
-Use the `tovectordb.py` script to convert the parsed patents into vector format.
-
-```bash
-python tovectordb.py
-```
-
-### Step 3: Run the Chatbot
-
-Launch the conversational assistant:
-
-```bash
-python chat.py
-```
-
-Ask your patent-related questions in plain English.
-
----
-
-## Example
-
-```bash
-🤖 PatentBot ready. Type 'exit' to quit.
-🧠 You: I've a new method for unmanned coffee machine, is it already patented?
-🔍 Found 3 relevant patent documents.
-💡 Answer: The patent with ID 10997647 describes a method involving user arrival timing and automated order processing. Your idea appears distinct, but we recommend thorough review.
-📄 Cited PIDs: 10997647
+patentai/
+├── app/
+│   ├── routes/
+│   ├── utils/
+│   ├── chroma_db_patents/     # Created at runtime
+│   ├── parsed_patents/        # Created at runtime
+│   └── __init__.py
+├── main.py
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── .env
+└── .dockerignore
 ```
 
 ---
 
-## Directory Structure
+## 🔌 API Endpoints
 
-```
-.
-├── parsed_patents/             # Output folder for scraped patent CSVs
-├── chroma_db_patents/         # ChromaDB vector store directory
-├── chat.py                    # Main conversational interface
-├── parse.py                   # Web scraper for FreePatentsOnline
-├── tovectordb.py              # Embedding & indexing patents into vector DB
-└── README.md                  # This documentation
-```
+### 🔐 Auth
 
----
+#### `POST /api/register`
 
-## Future Enhancements
+* **Input:** `{ "email": "user@example.com", "password": "yourpassword" }`
+* **Output:** `{ "message": "User registered successfully" }`
 
-* 🔗 **Switch to Official Patent APIs**:
+#### `POST /api/login`
 
-  * Replace scraping with structured APIs such as:
-
-    * USPTO Open Data API
-    * EPO's Open Patent Services (OPS)
-    * Google Patent Public Datasets
-  * This will ensure richer metadata and more reliable, large-scale ingestion.
-
-* 🤖 **LLM Improvements**:
-
-  * Upgrade to stronger models (e.g., GPT-4, Claude, Gemini Pro) for better reasoning.
-  * Fine-tune LLM on patent data for improved technical language understanding.
-
-* 📊 **Semantic Ranking**:
-
-  * Use rerankers like Cohere or OpenAI's embeddings to reorder search results.
-
-* 🧾 **Patent PDF Parsing**:
-
-  * Integrate PDF extraction and OCR from patent PDFs directly.
+* **Input:** `{ "email": "user@example.com", "password": "yourpassword" }`
+* **Output:** `{ "message": "Login successful", "session_id": "uuid-string" }`
 
 ---
 
+### 🧠 Chat
+
+#### `POST /api/chat`
+
+* **Headers:** `{ "session_id": "<your-session-id>" }`
+* **Input:** `{ "query": "What is the patent about X?" }`
+* **Output:** `{ "response": "LLM-generated answer", "tokens_used": 123 }`
+
+---
+
+### 📚 Patent Parsing
+
+#### `POST /api/parse-topic`
+
+* **Headers:** `{ "session_id": "<your-session-id>" }`
+* **Input:** `{ "topic": "machine learning" }`
+* **Output:** `{ "message": "Parsing started", "topic": "machine learning" }`
+
+---
+
+## 🤭 Future Roadmap
+
+* ✅ Add API-based patent ingestion (USPTO, EPO)
+* ⛓️ Add cross-topic citation tracking
+* 🧠 Improve long-context memory with RAG
+* 🧪 Add full test suite (PyTest + coverage)
+* 🎨 Add web frontend (React / Svelte)
+
+---
+
+## 🛡️ License
+
+MIT License. Use and contribute freely.
+
+---
+
+## 🤝 Contributing
+
+Pull requests and issues welcome! Please file bugs, suggestions, or docs improvements in the [GitHub Issues](https://github.com/your-org/PatentBot/issues) tab.

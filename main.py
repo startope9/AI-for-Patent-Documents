@@ -8,8 +8,8 @@ import os
 from app.routes import auth, chat, topic  # <- added topic
 
 # === ENVIRONMENT SETUP ===
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-REDIS_URI = os.getenv("REDIS_URI", "redis://localhost:6379")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongo:27017")
+REDIS_URI = os.getenv("REDIS_URI", "redis://redis:6379")
 
 # === INIT FASTAPI ===
 app = FastAPI(

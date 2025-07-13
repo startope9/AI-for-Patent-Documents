@@ -12,6 +12,9 @@ from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 
+from dotenv import load_dotenv  
+load_dotenv()
+
 # === CONFIG ===
 CHROMA_DB_DIR = os.path.join(os.path.dirname(__file__), "chroma_db_patents")
 COLLECTION_NAME = "patent_docs"
