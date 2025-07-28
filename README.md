@@ -15,58 +15,21 @@ PatentAI is a FastAPI-based backend that allows users to register/login, parse p
 
 ---
 
-## 🛠️ Local Setup (without Docker)
+## 🐳 Running with Docker Compose
 
-1. **Clone the repo**
+This is the recommended setup. It builds the app and runs MongoDB and Redis containers automatically.
 
-   ```bash
-   git clone https://github.com/yourname/patentai.git
-   cd patentai
-   ```
-
-2. **Create virtual env & install dependencies**
+1. **Add your HuggingFace token to `.env`**
 
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # on Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-
-3. **Create a `.env` file**
-
-   ```env
    HF_TOKEN=your_huggingface_token
    ```
 
-4. **Start MongoDB and Redis locally** (you need them running!)
-
-   * MongoDB on `localhost:27017`
-   * Redis on `localhost:6379`
-   * update the above uri in `main.py`
-
-5. **Run the app**
+2. **Start the services**
 
    ```bash
-   uvicorn main:app --reload
+   docker-compose up --build
    ```
-
----
-
-## 🐳 Running with Docker Compose
-
-This method is recommended. It builds the app and runs MongoDB and Redis containers automatically.
-
-### 1. Add your HuggingFace token to `.env`
-
-```bash
-HF_TOKEN=your_huggingface_token
-```
-
-### 2. Start the services
-
-```bash
-docker-compose up --build
-```
 
 This will:
 
@@ -116,19 +79,27 @@ patentai/
 
 #### `POST /api/chat`
 
-* **Headers:** `{ "session_id": "<your-session-id>" }`
-* **Input:** `{ "query": "What is the patent about X?" }`
-* **Output:** `{ "response": "LLM-generated answer", "tokens_used": 123 }`
+* **Headers:** `session_id: <your-session-id>`
+* **Input:** `{ "message": "What is the patent about X?" }`
+* **Output:** `{ "answer": "LLM-generated answer", "citations": ["pid1","pid2"], "user": "user@example.com" }`
 
 ---
 
 ### 📚 Patent Parsing
 
-#### `POST /api/parse-topic`
+#### `POST /api/topic/initiate`
 
-* **Headers:** `{ "session_id": "<your-session-id>" }`
+* **Headers:** `session_id: <your-session-id>`
 * **Input:** `{ "topic": "machine learning" }`
-* **Output:** `{ "message": "Parsing started", "topic": "machine learning" }`
+* **Output:**
+
+  ```json
+  {
+    "status": "success",
+    "message": "Inserted 50 patents for 'machine_learning' into ChromaDB.",
+    "user": "user@example.com"
+  }
+  ```
 
 ---
 

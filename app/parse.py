@@ -13,9 +13,10 @@ MAX_FAILURES = 5  # max consecutive failed pages before exit
 DELAY_BETWEEN_PATENTS = 1.5  # seconds between requests
 
 USER_AGENTS = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15',
+    # 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    # 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0',
+    # 'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15',
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
 ]
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -90,7 +91,7 @@ def save_to_csv(query, data):
 
 # === Main Driver ===
 def main():
-    query = input("Enter topic to search patents for: ").strip()
+    query = input("Enter topic to search patents for: ").strip()    
     if not query:
         print("❌ No query entered.")
         return
